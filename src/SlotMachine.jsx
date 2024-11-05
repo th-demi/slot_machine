@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, ArrowLeft } from 'lucide-react';
+import { ArrowRight, ArrowLeft, X } from 'lucide-react';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 
-
 const REEL_HEIGHT = 112;
-const ICON_HEIGHT = 100; // Set the icon height
+const ICON_HEIGHT = 100;
 const NUM_ICONS = 9;
 const FIRST_REEL_DURATION = 2100;
 const ADDITIONAL_REEL_DELAY = 200;
@@ -127,16 +126,16 @@ const SlotMachine = () => {
 
     if (hasAllLegendary) {
       message = 'Jackpot! You hit 3 legendary items!';
-      setBalance(prev => prev + (bet * 2)); // Reward for jackpot
+      setBalance(prev => prev + (bet * 2)); 
     } else if (hasLegendary) {
       message = 'Wow! You just won a legendary item!';
-      setBalance(prev => prev + (bet * 1.5)); // Reward for legendary
+      setBalance(prev => prev + (bet * 0.5)); 
     } else if (hasRare && spinItems.filter(item => item.rarity === 'rare').length === 3) {
       message = 'Impressive, you just won 3 rare items!';
-      setBalance(prev => prev + (bet * 1.2)); // Reward for 3 rare
+      setBalance(prev => prev + (bet * 0.25)); 
     } else if (hasRare) {
       message = 'Hurray! You just got a rare item!';
-      setBalance(prev => prev + (bet * 1.1)); // Reward for rare
+      setBalance(prev => prev + 0.2); 
     } else if (hasCommon) {
       message = 'Spin again for bigger rewards!';
     }
@@ -155,55 +154,73 @@ const SlotMachine = () => {
   };
 
   const togglePayTable = () => {
-    setShowPayTable(prev => !prev);
+    setShowPayTable(true);
+    setAlertVisible(true);
+  };
+
+  const closeAlert = () => {
+    setAlertVisible(false);
+    setShowPayTable(false);
   };
 
   return (
     <div className="flex flex-col items-center justify-center h-full w-full p-4 relative">
-      <Card className="w-full sm:max-w-lg md:max-w-2xl lg:max-w-3xl bg-gradient-to-b from-[#2d3741] to-[#1a1f24] rounded-lg overflow-hidden border-2 border-[#f7b84b] p-4 sm:p-6 md:p-8 relative">
-        <div className="p-4 sm:p-6 relative">
-          {alertVisible && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-              <div className="bg-white p-4 rounded-lg shadow-lg animate-fade-in">
-                <Alert className="m-0" variant="success">
-                  <AlertTitle>You won!</AlertTitle>
-                  {rewards.map((reward, index) => (
-                    <div key={index} style={{ color: reward.color }}>
-                      {reward.text}
-                    </div>
-                  ))}
-                </Alert>
-              </div>
-            </div>
-          )}
-
-          {showPayTable && (
-            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-              <Card className="p-4 rounded-lg shadow-lg bg-gradient-to-b from-[#2d3741] to-[#1a1f24] border-2 border-[#f7b84b]">
-                <h2 className="text-xl font-bold mb-4 text-[#f7b84b]">Pay Table</h2> {/* Match title color */}
-                <ul className="list-disc list-inside text-[#e6c577]"> {/* Match text color */}
-                  <li>3 Legendary Items: Jackpot! (+2x bet)</li>
-                  <li>1 Legendary Item: Wow! You just won a legendary item! (+1.5x bet)</li>
-                  <li>3 Rare Items: Impressive, you just won 3 rare items! (+1.2x bet)</li>
-                  <li>1 Rare Item: Hurray! You just got a rare item! (+1.1x bet)</li>
-                  <li>3 Common Items: Spin again for bigger rewards!</li>
-                </ul>
-                <Button onClick={togglePayTable} className="mt-4">
-                  Close
-                </Button>
-              </Card>
-            </div>
-          )}
-
-
-          <h1 className="text-2xl font-bold text-[#f7b84b] tracking-wider mb-2">
-            SLOT MACHINE
-          </h1>
-          <div className="text-[#e6c577] text-lg sm:text-xl font-bold">
-            Balance: ${balance.toLocaleString()}
+      <Card className="w-full sm:max-w-lg md:max-w-2xl lg:max-w-3xl bg-yellow-400 rounded-xl p-4 sm:p-6 md:p-8 relative shadow-lg">
+        <div className="absolute top-[-30px] left-1/2 transform -translate-x-1/2 w-4/5 z-10">
+          <div className="bg-red-500 text-white text-2xl font-bold py-2 px-8 rounded-full border-4 border-yellow-500 flex items-center justify-center relative">
+            <div className="absolute left-0 right-0 top-1/2 transform -translate-y-1/2 h-px bg-white opacity-20"></div>
+            <span className="relative">JACKPOT</span>
           </div>
         </div>
 
+        <div className="absolute right-[-10px] top-1/2 -translate-y-1/2 translate-x-1/2 z-10">
+          <div className="w-4 h-48 bg-red-500 rounded-full"></div>
+          <div className="w-8 h-8 bg-red-500 rounded-full mt-4"></div>
+        </div>
+
+        {showWinAlert && alertVisible && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-red-500 p-6 rounded-lg shadow-lg relative">
+              <Alert className="m-0" variant="success">
+                <AlertTitle>You won!</AlertTitle>
+                {rewards.map((reward, index) => (
+                  <div key={index} style={{ color: reward.color }}>
+                    {reward.text}
+                  </div>
+                ))}
+              </Alert>
+            </div>
+          </div>
+        )}
+
+        {showPayTable && alertVisible && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+            <div className="bg-red-500 p-6 rounded-lg shadow-lg relative">
+              <Button 
+                onClick={closeAlert} 
+                className="absolute top-2 right-2 text-white p-1 bg-gray-800 rounded-full"
+              >
+                <X size={16} />
+              </Button>
+              <Alert className="m-0" variant="info">
+                <AlertTitle>Pay Table</AlertTitle>
+                <ul>
+                  <li><strong>All 3 Legendary items</strong>: 2x multiplier</li>
+                  <li><strong>At least 1 Legendary item</strong>: 0.5x multiplier</li>
+                  <li><strong>All 3 Rare items</strong>: 0.25x multiplier</li>
+                  <li><strong>At least 1 Rare item</strong>: 0.2x multiplier</li>
+                  <li><strong>All Common items</strong>: No multiplier</li>
+                </ul>
+              </Alert>
+            </div>
+          </div>
+        )}
+
+        <h1 className="text-2xl font-bold text-[#ffffff] tracking-wider mb-2">SLOT MACHINE</h1>
+        <div className="text-[#ffffff] text-lg sm:text-xl font-bold">
+          Balance: ${balance.toLocaleString()}
+        </div>
+        
         <div className="bg-[#1a1f24] p-4 rounded-lg mb-6 shadow-inner border border-[#465058]">
           <div className="flex justify-center gap-2 flex-wrap">
             {[0, 1, 2].map((reelIndex) => (

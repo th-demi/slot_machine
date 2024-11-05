@@ -18,20 +18,20 @@
 }
 
 html, body {
-  height: 100%; /* Ensure html and body take full height */
-  margin: 0;   /* Remove default margin */
+  height: 100%;
+  margin: 0;
 }
 
 body {
   display: flex;
-  flex-direction: column; /* Ensure flex direction is column */
-  min-height: 100vh;     /* Minimum height for full viewport */
+  flex-direction: column; 
+  min-height: 100vh; 
 }
 
 #root {
-  flex: 1;         /* Allow root to take available space */
-  width: 100%;     /* Ensure root takes full width */
-  display: flex;   /* Optional: allows for child elements to use flexbox */
+  flex: 1;         
+  width: 100%;    
+  display: flex;   
 }
 
 a {
@@ -73,7 +73,7 @@ button:focus-visible {
 }
 @media (max-width: 640px) {
   video {
-    object-fit: cover; /* Ensures the video covers the background */
+    object-fit: cover;
   }
 }
 @keyframes fadeIn {

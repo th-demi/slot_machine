@@ -1,12 +1,10 @@
 import React, { useEffect } from 'react';
-import SlotMachine from './SlotMachine'; // Adjust the path if necessary
+import SlotMachine from './SlotMachine';
 
 const App = () => {
   useEffect(() => {
-    // Create the audio object
-    const audio = new Audio('assets/audio/pubg_music.mp3'); // Adjust path if necessary
+    const audio = new Audio('assets/audio/pubg_music.mp3');
 
-    // Attempt to play the audio
     const playAudio = async () => {
       try {
         await audio.play();
@@ -16,22 +14,19 @@ const App = () => {
       }
     };
 
-    // Automatically try to play the audio on first click
     const handleUserInteraction = () => {
       playAudio();
-      window.removeEventListener('click', handleUserInteraction); // Remove event listener after the first click
+      window.removeEventListener('click', handleUserInteraction);
     };
 
-    // Add event listener for user interaction (click anywhere)
     window.addEventListener('click', handleUserInteraction);
 
-    // Cleanup audio when component unmounts
     return () => {
       audio.pause();
       audio.currentTime = 0;
       window.removeEventListener('click', handleUserInteraction);
     };
-  }, []); // Run this effect only once when the component is mounted
+  }, []);
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
