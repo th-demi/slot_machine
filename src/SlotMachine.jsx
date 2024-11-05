@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { Alert, AlertTitle } from '@/components/ui/alert';
 
+
 const REEL_HEIGHT = 112;
-const ICON_HEIGHT = 112;
+const ICON_HEIGHT = 100; // Set the icon height
 const NUM_ICONS = 9;
 const FIRST_REEL_DURATION = 2100;
 const ADDITIONAL_REEL_DELAY = 200;
@@ -23,16 +24,17 @@ const items = [
 ];
 
 const SlotMachine = () => {
-  const [balance, setBalance] = useState(100); // Set initial balance to 100
+  const [balance, setBalance] = useState(100);
   const [bet, setBet] = useState(5);
   const [isSpinning, setIsSpinning] = useState(false);
   const [indexes, setIndexes] = useState([0, 0, 0]);
   const [rewards, setRewards] = useState([]);
   const [showWinAlert, setShowWinAlert] = useState(false);
   const [alertVisible, setAlertVisible] = useState(false);
+  const [showPayTable, setShowPayTable] = useState(false);
   const reelsRef = useRef([]);
   const spinIntervalsRef = useRef([]);
-  const spinAudioRef = useRef(new Audio('assets/audio/spin.mp3')); // Audio for spin effect
+  const spinAudioRef = useRef(new Audio('assets/audio/spin.mp3'));
 
   useEffect(() => {
     reelsRef.current = reelsRef.current.slice(0, 3);
@@ -90,9 +92,9 @@ const SlotMachine = () => {
   const spin = async () => {
     if (balance < bet || isSpinning) return;
 
-    spinAudioRef.current.play(); // Play spin audio
+    spinAudioRef.current.play();
     setIsSpinning(true);
-    setBalance(prev => prev - bet); // Deduct the bet from the balance
+    setBalance(prev => prev - bet);
     setRewards([]);
     setShowWinAlert(false);
 
@@ -100,13 +102,13 @@ const SlotMachine = () => {
 
     const newIndexes = [];
     for (let i = 0; i < 3; i++) {
-        const index = await roll(i);
-        newIndexes[i] = index;
-        setIndexes(prev => {
-            const next = [...prev];
-            next[i] = index;
-            return next;
-        });
+      const index = await roll(i);
+      newIndexes[i] = index;
+      setIndexes(prev => {
+        const next = [...prev];
+        next[i] = index;
+        return next;
+      });
     }
 
     calculateWinnings(newIndexes);
@@ -125,30 +127,35 @@ const SlotMachine = () => {
 
     if (hasAllLegendary) {
       message = 'Jackpot! You hit 3 legendary items!';
-      setBalance(prev => prev + (bet * 2)); // Add 2 times the bet amount to balance
+      setBalance(prev => prev + (bet * 2)); // Reward for jackpot
     } else if (hasLegendary) {
       message = 'Wow! You just won a legendary item!';
+      setBalance(prev => prev + (bet * 1.5)); // Reward for legendary
     } else if (hasRare && spinItems.filter(item => item.rarity === 'rare').length === 3) {
       message = 'Impressive, you just won 3 rare items!';
+      setBalance(prev => prev + (bet * 1.2)); // Reward for 3 rare
     } else if (hasRare) {
       message = 'Hurray! You just got a rare item!';
+      setBalance(prev => prev + (bet * 1.1)); // Reward for rare
     } else if (hasCommon) {
       message = 'Spin again for bigger rewards!';
     }
 
-    // Update rewards to show the message
     setRewards([{ text: message, color: '#f7b84b' }]);
 
-    // Control alert visibility
     if (message) {
       setShowWinAlert(true);
       setAlertVisible(true);
       setTimeout(() => {
         setAlertVisible(false);
-      }, 4000); // Hide alert after 4 seconds
+      }, 4000);
     } else {
       setShowWinAlert(false);
     }
+  };
+
+  const togglePayTable = () => {
+    setShowPayTable(prev => !prev);
   };
 
   return (
@@ -170,74 +177,94 @@ const SlotMachine = () => {
             </div>
           )}
 
-          <div className="text-center mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#f7b84b] tracking-wider mb-2">
-              SLOT MACHINE
-            </h1>
-            <div className="text-[#e6c577] text-lg sm:text-xl font-bold">
-              Balance: ${balance.toLocaleString()}
+          {showPayTable && (
+            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+              <Card className="p-4 rounded-lg shadow-lg bg-gradient-to-b from-[#2d3741] to-[#1a1f24] border-2 border-[#f7b84b]">
+                <h2 className="text-xl font-bold mb-4 text-[#f7b84b]">Pay Table</h2> {/* Match title color */}
+                <ul className="list-disc list-inside text-[#e6c577]"> {/* Match text color */}
+                  <li>3 Legendary Items: Jackpot! (+2x bet)</li>
+                  <li>1 Legendary Item: Wow! You just won a legendary item! (+1.5x bet)</li>
+                  <li>3 Rare Items: Impressive, you just won 3 rare items! (+1.2x bet)</li>
+                  <li>1 Rare Item: Hurray! You just got a rare item! (+1.1x bet)</li>
+                  <li>3 Common Items: Spin again for bigger rewards!</li>
+                </ul>
+                <Button onClick={togglePayTable} className="mt-4">
+                  Close
+                </Button>
+              </Card>
             </div>
-          </div>
-          
-          <div className="bg-[#1a1f24] p-4 rounded-lg mb-6 shadow-inner border border-[#465058]">
-            <div className="flex justify-center gap-2 flex-wrap">
-              {[0, 1, 2].map((reelIndex) => (
-                <div 
-                  key={reelIndex}
-                  className="relative flex-shrink-0 w-1/3 max-w-[120px] h-32 bg-[#2d3741] rounded-lg overflow-hidden border-2 border-[#f7b84b] shadow-xl"
-                >
-                  <div className="absolute top-0 left-0 right-0 h-1/2 bg-[#2d3741] transform -translate-y-full"></div>
-                  <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-[#2d3741] transform translate-y-full"></div>
-                  
-                  <div
-                    ref={el => reelsRef.current[reelIndex] = el}
-                    className="absolute left-0 right-0 flex flex-col items-center"
-                    style={{ 
-                      transform: `translateY(${-indexes[reelIndex] * ICON_HEIGHT}px)`,
-                      top: 0
-                    }}
-                  >
-                    {[...Array(3)].map((_, i) => (
-                      <React.Fragment key={i}>
-                        {items.map((item, itemIndex) => (
-                          <div
-                            key={itemIndex}
-                            className="flex items-center justify-center"
-                            style={{ 
-                              height: `${ICON_HEIGHT}px`,
-                              width: '100%',
-                              color: item.color
-                            }}
-                          >
-                            <img 
-                              src={item.src} 
-                              alt={item.name} 
-                              className="h-full w-full object-contain"
-                            />
-                          </div>
-                        ))}
-                      </React.Fragment>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          )}
 
-          <div className="flex justify-between mb-4">
-            <div className="flex items-center">
-              <Button onClick={() => setBet(bet - 5)} disabled={bet <= 5}>
-                <ArrowLeft />
-              </Button>
-              <span className="mx-2">Bet: ${bet}</span>
-              <Button onClick={() => setBet(bet + 5)} disabled={bet >= balance}>
-                <ArrowRight />
-              </Button>
-            </div>
-            <Button onClick={spin} disabled={isSpinning}>
-              Spin
+
+          <h1 className="text-2xl font-bold text-[#f7b84b] tracking-wider mb-2">
+            SLOT MACHINE
+          </h1>
+          <div className="text-[#e6c577] text-lg sm:text-xl font-bold">
+            Balance: ${balance.toLocaleString()}
+          </div>
+        </div>
+
+        <div className="bg-[#1a1f24] p-4 rounded-lg mb-6 shadow-inner border border-[#465058]">
+          <div className="flex justify-center gap-2 flex-wrap">
+            {[0, 1, 2].map((reelIndex) => (
+              <div 
+                key={reelIndex}
+                className="relative flex-shrink-0 w-1/3 max-w-[120px] h-32 bg-[#2d3741] rounded-lg overflow-hidden border-2 border-[#f7b84b] shadow-xl"
+              >
+                <div className="absolute top-0 left-0 right-0 h-1/2 bg-[#2d3741] transform -translate-y-full"></div>
+                <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-[#2d3741] transform translate-y-full"></div>
+                
+                <div
+                  ref={el => reelsRef.current[reelIndex] = el}
+                  className="absolute left-0 right-0 flex flex-col items-center"
+                  style={{ 
+                    transform: `translateY(${-indexes[reelIndex] * ICON_HEIGHT}px)`,
+                    top: 0
+                  }}
+                >
+                  {[...Array(3)].map((_, i) => (
+                    <React.Fragment key={i}>
+                      {items.map((item, itemIndex) => (
+                        <div
+                          key={itemIndex}
+                          className="flex items-center justify-center"
+                          style={{ 
+                            height: `${ICON_HEIGHT}px`,
+                            width: '100%',
+                            color: item.color
+                          }}
+                        >
+                          <img 
+                            src={item.src} 
+                            alt={item.name} 
+                            className="h-full w-full object-contain"
+                          />
+                        </div>
+                      ))}
+                    </React.Fragment>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex justify-between mb-4">
+          <div className="flex items-center">
+            <Button onClick={() => setBet(bet - 5)} disabled={bet <= 5}>
+              <ArrowLeft />
+            </Button>
+            <span className="mx-2">Bet: ${bet}</span>
+            <Button onClick={() => setBet(bet + 5)} disabled={bet >= balance}>
+              <ArrowRight />
             </Button>
           </div>
+          <Button onClick={spin} disabled={isSpinning}>
+            Spin
+          </Button>
+          <Button onClick={togglePayTable} className="ml-4">
+            Pay Table
+          </Button>
         </div>
       </Card>
     </div>
